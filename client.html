@@ -1,0 +1,26 @@
+<html>
+    <head>
+        <script src='http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js'></script>
+        <script src='/socket.io/socket.io.js'></script>
+        <script src='/client.js'></script>
+        <script src='/json2.js'></script>
+        <script src='http://jtemplates.tpython.com/jquery-jtemplates.js'></script>
+        <link rel='stylesheet' type='text/css' href='/client.css' />
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Droid+Sans">
+    </head>
+    <body>
+        <h2>d<span class='ue'>&uuml;</span>dl</h2>
+        <div id='cdiv'>
+            <canvas id='c'>
+                Looks like your browser doesn't support canvas. :(
+            </canvas>
+        </div>
+
+        <div id='debug'></div>
+        <script type='text/javascript'>
+            $('#debug').attr('disabled','disabled');
+            var dudl = new DudlPad($('#c')[0], 600,400, null);
+            debug('d&uuml;dl initialized!');
+        </script>
+    </body>
+</html>
