@@ -22,6 +22,8 @@ function DudlPad(canvas, width, height, socket) {
     this.drawing = false;
 
     var that = this;
+    this.context.strokeStyle = "#123456";
+
     $(this.canvas).mousedown(function(e) {
         that.mouseX = e.pageX - that.canvas.offsetLeft;
         that.mouseY = e.pageY - that.canvas.offsetTop;
@@ -35,6 +37,14 @@ function DudlPad(canvas, width, height, socket) {
         if(that.drawing) {
             var x = e.pageX - that.canvas.offsetLeft;
             var y = e.pageY - that.canvas.offsetTop;
+            
+            that.socket.send({
+                type: 'drawLine',
+                x1: that.mouseX,
+                y1: that.mouseY,
+                x2: x,
+                y2: y
+            });
 
             that.drawLine(that.mouseX,that.mouseY, x,y);
             that.mouseX = x;
@@ -57,6 +67,13 @@ function DudlPad(canvas, width, height, socket) {
         }
     });
 
+    this.socket.on('message', function(data) {
+        switch(data.type) {
+        case 'drawLine':
+            that.drawLine(data.x1,data.y1,data.x2,data.y2);
+            break;
+        }
+    });
 
     return true;
 };

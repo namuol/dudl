@@ -47,7 +47,7 @@ h2 .ue {
     bottom: 0;
     margin: 0;
     padding: 5pt;
-    font-family: 'Droid Sans Mono','DejaVu sans mono';
+    font-family: 'Droid Sans Mono','DejaVu Sans Mono', sans, sans-serif;
     font-size: 8pt;
     resize: none;
     text-shadow: 1px 1px 1px rgba(0,0,0,1);

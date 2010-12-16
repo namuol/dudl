@@ -65,6 +65,8 @@ socket.on('connection', function(client) {
         client.send(data);
     });
 
+    clients.push(client);
+
     client.on('message', function(data) {
         console.log('RECV: ' + client + ': ' + JSON.stringify(data));
         switch(data.type) {
@@ -73,7 +75,6 @@ socket.on('connection', function(client) {
             if(_.indexOf(clients, client) != -1)
                 break;
 
-            clients.push(client);
             client.name = data.name;
             broadcast({
                 type: 'joined',
