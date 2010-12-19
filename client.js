@@ -60,7 +60,7 @@ function DudlPad(container, width, height, socket) {
     $(canvas).mouseup(function(e) {
         mouseHeld = false;
         drawing = false;
-        punchOut();
+        fireEventAndSendMsg('punchOut',{});
     });
 
     $(canvas).mouseleave(function(e) {
@@ -73,21 +73,58 @@ function DudlPad(container, width, height, socket) {
         }
     });
 
+    var shiftPressed = false,
+        ctrlPressed = false;
+
+    $(window).keydown(function(e) {
+        if(e.keyCode == '16') { // SHIFT
+            shiftPressed = true;
+        } else if(e.keyCode == '17') { // CTRL
+            ctrlPressed = true;
+        } else if(e.keyCode == '89') { // Y
+            if(ctrlPressed)
+                fireEventAndSendMsg('redo',{});
+        } else if(e.keyCode == '90') { // Z
+            if(ctrlPressed)
+                fireEventAndSendMsg('undo',{});
+        }
+    });
+
+    $(window).keyup(function(e) {
+        if(e.keyCode == '16') { // SHIFT
+            shiftPressed = false;
+        } else if(e.keyCode == '17') { // CTRL
+            ctrlPressed = false;
+        }
+    });
+
+
     socket.on('message', function(data) {
         var msg = decodeMsg(data);
         //debug(msg.type + '(' + JSON.stringify(msg) + ')');
-        eval(msg.type + '(msg);');
+        eval(msg.type + '(msg.data);');
     });
 
     function fireEventAndSendMsg(msgType, argData) {
-        argData.type = msgType;
-        socket.send(encodeMsg(argData));
+        var msg = {
+            type: msgType,
+            data: argData
+        };
+        socket.send(encodeMsg(msg));
         eval(msgType + '(argData);');
     };
 
     this.fire = fireEventAndSendMsg;
 
     ////////////////////////////////////////////////////////////
+    function hideCanvas(args) {
+        $(canvas).hide();
+    };
+
+    function showCanvas(args) {
+        $(canvas).show();
+    };
+
     function drawLines(args) {
         // ARGS //////////////
         var lines = args.lines;
@@ -110,7 +147,8 @@ function DudlPad(container, width, height, socket) {
         // ARGS ////////////
         punchedIn = true;
         ++hpos;
-        history[hpos] = args;
+        history[hpos] = data;
+        history[hpos+1] = undefined;
     };
 
     function punchOut(args) {
@@ -153,20 +191,17 @@ function DudlPad(container, width, height, socket) {
     function undo(args) {
         if(hpos >= 0) {
             context.clearRect(0,0,canvas.width,canvas.height);
-
-            for(var i=0; i<hpos; ++i) {
-                drawLines({lines: history[i].lines});
+            for(var i=0; i < hpos && history[i] != undefined; ++i) {
+                eval(history[i].type + '(history[i]);');
             }
             --hpos;
-            debug(hpos + ':' + history.length);
         }
     };
 
     function redo(args) {
-        if(hpos < history.length-1) {
-            drawLines({lines: history[hpos+1].lines});
+        if(history[hpos+1] != undefined) {
+            eval(history[hpos+1].type + '(history[hpos+1]);');
             ++hpos;
-            debug(hpos + ':' + history.length);
         }
     };
 

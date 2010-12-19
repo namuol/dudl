@@ -63,9 +63,11 @@ function broadcast(msg, client) {
 }
 
 socket.on('connection', function(client) {
+    client.send(encodeMsg({type:'hideCanvas'}));
     log.forEach(function(msg,index,array) {
         client.send(encodeMsg(msg));
     });
+    client.send(encodeMsg({type:'showCanvas'}));
 
     clients.push(client);
 
