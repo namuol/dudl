@@ -34,10 +34,9 @@ h2 .ue {
     height: 100%;
 }
 
-#debug {
+.debugPanel {
     overflow: auto;
     border: none;
-    float: left;
     background: rgba(0,0,0,0.5);
     color: white;
     position: fixed;
@@ -45,15 +44,13 @@ h2 .ue {
     height: 8em;
     left: 0;
     bottom: 0;
-    margin: 0;
-    padding: 5pt;
+    right: 0;
     font-family: 'Droid Sans Mono','DejaVu Sans Mono', sans, sans-serif;
     font-size: 8pt;
-    resize: none;
     text-shadow: 1px 1px 1px rgba(0,0,0,1);
 }
 
-#debug .err {
+.debugPanel .err {
     color: #f44;
     font-weight: bold;
 }

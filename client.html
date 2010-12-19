@@ -2,6 +2,7 @@
     <head>
         <script src='http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js'></script>
         <script src='/socket.io/socket.io.js'></script>
+        <script src='/shared.js'></script>
         <script src='/client.js'></script>
         <script src='/json2.js'></script>
         <script src='http://jtemplates.tpython.com/jquery-jtemplates.js'></script>
@@ -10,19 +11,12 @@
     </head>
     <body>
         <h2>d<span class='ue'>&uuml;</span>dl</h2>
-        <div id='cdiv'>
-            <canvas id='c'>
-                Looks like your browser doesn't support canvas. :(
-            </canvas>
-        </div>
+        <div id='cdiv'></div>
 
-        <div id='debug'></div>
         <script type='text/javascript'>
-            $('#debug').attr('disabled','disabled');
             var socket = new io.Socket();
             socket.connect();
-            var dudl = new DudlPad($('#c')[0], 600,400, socket);
-            debug('d&uuml;dl initialized!');
+            var d = new DudlPad("#cdiv", 600,400, socket);
         </script>
     </body>
 </html>
