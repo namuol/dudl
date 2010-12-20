@@ -10,13 +10,16 @@
         <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Droid+Sans">
     </head>
     <body>
-        <h2>d<span class='ue'>&uuml;</span>dl</h2>
+        <h2>
+            <span class='d1'>d</span><span class='ue'>&uuml;</span><span class='d2'>d</span><span class='l1'>l</span>
+        </h2>
+        <div class='version'>PRE-ALPHA</div>
         <div id='cdiv'></div>
 
         <script type='text/javascript'>
             var socket = new io.Socket();
             socket.connect();
-            var d = new DudlPad("#cdiv", 600,400, socket);
+            var d = new DudlPad("#cdiv", 640,400, socket);
         </script>
     </body>
 </html>

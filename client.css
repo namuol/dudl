@@ -1,37 +1,97 @@
 body {
-    background: #47a;
     color: #fed;
     font-family: 'Droid Sans', 'DejaVu sans', sans, sans-serif;
+    background: -webkit-gradient(
+                    linear,
+                    left bottom,
+                    left top,
+                    color-stop(0.70, rgba(8,8,8,1)),
+                    color-stop(0.80, rgba(30,30,30,1)),
+                    color-stop(0.95, rgba(60,60,60,1))
+                );
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    background: -moz-linear-gradient(
+                    center bottom,
+                    rgb(8,8,8) 70%,
+                    rgb(30,30,30) 80%,
+                    rgb(60,60,60) 95%
+                );
 }
 
 h2 {
-    text-align: center;
-    font-size: 36pt;
-    font-weight: bold;
     padding: 0;
     margin: 0;
-    color: #247;
-    text-shadow: 1px 1px 0px rgba(255,255,255,0.3);
+    width: 200pt;
+    float: right;
+    text-align: center;
+    font-size: 48pt;
+    font-weight: bold;
+    text-shadow:  0pt -1pt 0pt rgba(255,255,255,0.9),
+                  0pt  1pt 4pt rgba(  0,  0,  0,0.9);
+}
+
+h2 .d1 {
+    color: #17B6FF;
 }
 
 h2 .ue {
-    padding-top: 1em;
-    color: #Bca;
-    text-shadow: -1px -1px 0px rgba(0,0,0,0.3);
+    color: #FF17B6;
+    /*text-shadow: -1px -1px 0px rgba(0,0,0,0.3);*/
 }
 
-#cdiv {
-    margin-left: auto;
-    margin-right: auto;
-    width: 600px;
-    height: 400px;
-    border: 1px solid #000;
+h2 .d2 {
+    color: #B6FF17;
+}
+
+h2 .l1 {
+    color: #1BFF17;
+}
+
+.version {
+    z-index: 255;
+    top: 24pt;
+    right: 42pt;
+    position: absolute;
+    float:right;
+    font-size: 20pt;
+    color: #f00;
+    -moz-transform: rotate(25deg);
+    -webkit-transform: rotate(25deg);
+    text-shadow: 1pt  1pt 4pt rgba(  0,  0,  0,0.9);
+}
+
+h2 span {
+    padding: 0;
+    margin: 0;
+}
+
+.dudlpad-container {
+    position: fixed;
+    right: 200pt;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    margin: 1em;
+    padding: 0;
+    background: #ccc;
+    overflow: auto;
+    text-align: center;
+}
+
+canvas {
+    z-index: 250;
     background: #fff;
-}
-
-#c {
+    margin: 0;
+    padding:0;
+    /*
     width: 100%;
-    height: 100%;
+    max-height: 100%;
+    height: auto;
+    margin: auto;
+    */
 }
 
 .debugPanel {

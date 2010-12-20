@@ -1,18 +1,26 @@
-function DudlPad(container, width, height, socket) {
+function DudlPad(outer_container, width, height, socket) {
+    // Create inner container:
+    var container = document.createElement('container');
+    $(container).addClass('dudlpad-container');
+    $(outer_container).append(container);
+
     // Create the canvas element:
     var canvas = document.createElement('canvas');
+    $(canvas).append("Looks like your browser doesn't support HTML5 CANVAS<br\>"+
+                     "Try Chrome, Safari, Firefox or Opera.");
     canvas.width = width;
     canvas.height = height;
 
     var debugPanel = document.createElement('div');
     $(debugPanel).addClass('debugPanel');
+    $(debugPanel).hide();
     $('body').append(debugPanel);
 
     var context = canvas.getContext('2d');
     context.lineWidth = 4.0;
     context.lineCap = 'round';
     context.lineJoin = 'round';
-
+    resizeCanvas();
     $(container).append(canvas);
 
     var mouseX = 0,
@@ -24,13 +32,15 @@ function DudlPad(container, width, height, socket) {
         hpos = -1; // Current position within history
 
     $(canvas).mousedown(function(e) {
-        mouseX = e.pageX - canvas.offsetLeft;
-        mouseY = e.pageY - canvas.offsetTop;
     
         fireEventAndSendMsg(
             'punchIn',
             {type:'drawLines', lines: []}
         );
+
+        var pos = mousePos(e);
+        mouseX = pos[0];
+        mouseY = pos[1];
 
         mouseHeld = true;
         drawing = true;
@@ -39,21 +49,19 @@ function DudlPad(container, width, height, socket) {
     $(canvas).mousemove(function(e) {
 
         if(drawing) {
-            var x = e.pageX - canvas.offsetLeft;
-            var y = e.pageY - canvas.offsetTop;
+            var pos = mousePos(e);
 
             var coords = {
                 x1: mouseX,
                 y1: mouseY,
-                x2: x,
-                y2: y
+                x2: pos[0],
+                y2: pos[1]
             };
-
 
             fireEventAndSendMsg('drawLine', coords);
 
-            mouseX = x;
-            mouseY = y;
+            mouseX = pos[0];
+            mouseY = pos[1];
         }
     });
 
@@ -72,6 +80,30 @@ function DudlPad(container, width, height, socket) {
             drawing = true;
         }
     });
+
+    $(window).resize(function(e) {
+        resizeCanvas();
+    });
+
+    function resizeCanvas() {
+        $(canvas).hide();
+        var ratio = canvas.width / canvas.height; 
+        var cwidth = $(container).innerWidth(),
+            cheight = $(container).innerHeight();
+        var cratio = cwidth / cheight;
+        var width, height;
+        if(cratio > ratio) {
+            height = cheight;
+            width = height * ratio;
+        } else {
+            width = cwidth;
+            height = width / ratio;
+        }
+
+        $(canvas).width(width);
+        $(canvas).height(height);
+        $(canvas).show();
+    }
 
     var shiftPressed = false,
         ctrlPressed = false;
@@ -114,16 +146,25 @@ function DudlPad(container, width, height, socket) {
         eval(msgType + '(argData);');
     };
 
-    this.fire = fireEventAndSendMsg;
+    function mousePos(e) {
+        var canvasPos = $(canvas).offset();
+        var absX = e.pageX - canvasPos.left;
+        var absY = e.pageY - canvasPos.top;
+
+        return [absX * (canvas.width/$(canvas).innerWidth()),
+                absY * (canvas.height/$(canvas).innerHeight())];
+    }
 
     ////////////////////////////////////////////////////////////
     function hideCanvas(args) {
         $(canvas).hide();
     };
+    this.hideCanvas = hideCanvas;
 
     function showCanvas(args) {
         $(canvas).show();
     };
+    this.showCanvas = showCanvas;
 
     function drawLines(args) {
         // ARGS //////////////

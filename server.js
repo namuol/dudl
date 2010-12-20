@@ -67,7 +67,7 @@ socket.on('connection', function(client) {
     log.forEach(function(msg,index,array) {
         client.send(encodeMsg(msg));
     });
-    client.send(encodeMsg({type:'showCanvas'}));
+    client.send(encodeMsg({type:'showCanvas',data:{}}));
 
     clients.push(client);
 
