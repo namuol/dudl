@@ -132,9 +132,9 @@ socket.on('connection', function(client) {
             history.doRedo();
             break;
         default:
-            broadcast(msg, client);
             break;
         }
+        broadcast(msg, client);
 
     });
 
