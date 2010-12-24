@@ -1,0 +1,192 @@
+@col1: #17B6FF;
+@col2: #FF17B6;
+@col3: #B6FF17;
+@col4: #1BFF17;
+@col5: #FF1717;
+
+.rounded_corners (@radius: 5pt) {
+    -moz-border-radius: @radius;
+    -webkit-border-radius: @radius;
+    border-radius: @radius;
+}
+
+.text_shadow (@left: 0, @top: 1pt, @penumbra: 4pt, @rgba: rgba(0,0,0,0.9)) {
+    text-shadow: @left @top @penumbra @rgba;
+}
+
+.glossy_text_shadow (@shleft: 0, @shtop: 1pt, @shpenumbra: 4pt, @shrgba: rgba(0,0,0,0.9),
+                     @gleft: 0, @gtop: -1pt, @gpenumbra: 0, @grgba: rgba(255,255,255,0.9)) {
+    text-shadow: @gleft @gtop @gpenumbra @grgba,
+                 @shleft @shtop @shpenumbra @shrgba;
+}
+
+.box_shadow (@left: 0, @top: 1pt, @penumbra: 4pt, @rgba: rgba(0,0,0,0.9)) {
+    -moz-box-shadow: @left @top @penumbra @rgba;
+    -webkit-box-shadow: @left @top @penumbra @rgba;
+    box-shadow: @left @top @penumbra @rgba;
+}
+
+
+.glossy_box_shadow (@shleft: 0, @shtop: 1pt, @shpenumbra: 4pt, @shrgba: rgba(0,0,0,0.9),
+                     @gleft: 0, @gtop: -1pt, @gpenumbra: 0, @grgba: rgba(255,255,255,0.9)) {
+    -moz-box-shadow: @gleft @gtop @gpenumbra @grgba,
+                @shleft @shtop @shpenumbra @shrgba;
+    -webkit-box-shadow: @gleft @gtop @gpenumbra @grgba,
+                @shleft @shtop @shpenumbra @shrgba;
+    box-shadow: @gleft @gtop @gpenumbra @grgba,
+                @shleft @shtop @shpenumbra @shrgba;
+}
+
+.no_select () {
+    -moz-user-select: none;
+    -webkit-user-select: none;
+}
+
+.selectable () {
+    -moz-user-select: true;
+    -webkit-user-select: true;
+}
+
+body {
+    color: #fed;
+    font-family: 'Droid Sans', 'DejaVu sans', sans, sans-serif;
+    background: -webkit-gradient(linear, left bottom, left top,
+                    color-stop(0.70, rgba(8,8,8,1)),
+                    color-stop(0.80, rgba(30,30,30,1)),
+                    color-stop(0.95, rgba(60,60,60,1)));
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    background: -moz-linear-gradient(center bottom,
+                    rgb(8,8,8) 70%,
+                    rgb(30,30,30) 80%,
+                    rgb(60,60,60) 95%);
+}
+
+h2 {
+    padding: 0;
+    margin: 0;
+    width: 200pt;
+    float: right;
+    text-align: center;
+    font-size: 48pt;
+    font-weight: bold;
+    .no_select;
+    .selectable;
+    .glossy_text_shadow;
+}
+
+
+h2 .d1 {
+    color: @col1;
+}
+
+h2 .ue {
+    color: @col2;
+}
+
+h2 .d2 {
+    color: @col3;
+}
+
+h2 .l1 {
+    color: @col4;
+}
+
+.version {
+    z-index: 255;
+    top: 24pt;
+    right: 42pt;
+    position: absolute;
+    float:right;
+    font-size: 18pt;
+    color: #f00;
+    -moz-transform: rotate(25deg);
+    -webkit-transform: rotate(25deg);
+    text-shadow: 0px 0px 5px rgba(255,255,255,1.0);
+    .no_select;
+}
+
+h2 span {
+    padding: 0;
+    margin: 0;
+}
+
+.dudlpad-container {
+    position: fixed;
+    right: 200pt;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    padding: 0;
+    margin: 1em;
+    background: #ccc;
+    color: #000;
+    overflow: auto;
+    text-align: center;
+}
+
+canvas {
+    z-index: 250;
+    background: #fff;
+    margin-left: auto;
+    margin-right: auto;
+    padding:0;
+    cursor: crosshair;
+}
+
+.user-msg {
+    width: 15em;
+    z-index: 251;
+    left: 1em;
+    position: fixed;
+    margin: 1em;
+    padding: 0;
+    float: left;
+    text-align: left;
+    .no_select;
+}
+
+.user-msg li {
+    .rounded_corners;
+    .glossy_box_shadow;
+    .text_shadow(0,-1pt,0,rgba(0,0,0,0.6));
+    font-weight: bold;
+    padding: 2pt;
+    padding-left: 1em;
+    padding-right: 1em;
+    margin-bottom: 0.33em;
+    background: @col1;
+    color: #fff;
+}
+
+.user-msg li.error {
+    background: @col5; 
+}
+
+.hide-cursor {
+    cursor: none;
+}
+
+.debugPanel {
+    overflow: auto;
+    border: none;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    position: fixed;
+    width: 100%;
+    height: 8em;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    font-family: 'Droid Sans Mono','DejaVu Sans Mono', sans, sans-serif;
+    font-size: 8pt;
+    text-shadow: 1px 1px 1px rgba(0,0,0,1);
+}
+
+.debugPanel .err {
+    color: #f44;
+    font-weight: bold;
+
+}

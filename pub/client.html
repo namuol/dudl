@@ -1,12 +1,13 @@
 <html>
     <head>
+        <title>d&uuml;dl</title>
         <script src='http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js'></script>
-        <script src='/socket.io/socket.io.js'></script>
-        <script src='/shared.js'></script>
-        <script src='/client.js'></script>
-        <script src='/json2.js'></script>
-        <script src='http://jtemplates.tpython.com/jquery-jtemplates.js'></script>
-        <link rel='stylesheet' type='text/css' href='/client.css' />
+        <script src='./socket.io/socket.io.js'></script>
+        <script src='./shared.js'></script>
+        <script src='./client.js'></script>
+        <script src='./json2.js'></script>
+        <script src='./jquery-jtemplates.js'></script>
+        <link rel='stylesheet' type='text/css' href='./client.css' />
         <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Droid+Sans">
     </head>
     <body>
@@ -18,8 +19,9 @@
 
         <script type='text/javascript'>
             var socket = new io.Socket();
-            socket.connect();
-            var d = new DudlPad("#cdiv", 640,400, socket);
+            var debug = new DudlDebug();
+            //$(debug.elem()).show();
+            var d = new DudlPad("#cdiv", 640,400, socket, debug);
         </script>
     </body>
 </html>
