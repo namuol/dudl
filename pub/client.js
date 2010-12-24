@@ -101,9 +101,11 @@ function DudlPad(outer_container, width, height, socket, debug) {
     });
 
     $(window).keydown(function(e) {
+        debug.out('keydown: ' + e.keyCode);
         if(e.keyCode == '16') { // SHIFT
             shiftPressed = true;
-        } else if(e.keyCode == '17') { // CTRL
+        } else if(e.keyCode == '17' ||
+                  e.keyCode == '224') { // CTRL
             ctrlPressed = true;
         } else if(e.keyCode == '89') { // Y
             if(!history.punchedIn && ctrlPressed)
@@ -115,9 +117,11 @@ function DudlPad(outer_container, width, height, socket, debug) {
     });
 
     $(window).keyup(function(e) {
+        debug.out('keyup: ' + e.keyCode);
         if(e.keyCode == '16') { // SHIFT
             shiftPressed = false;
-        } else if(e.keyCode == '17') { // CTRL
+        } else if(e.keyCode == '17' ||
+                  e.keyCode == '224') { // CTRL
             ctrlPressed = false;
         }
     });
