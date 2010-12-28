@@ -1,12 +1,32 @@
 // Shared between client and server.
 
 // TODO: compress/simplify data here
-function decodeMsg(msg) {
-    return msg;
+function decodeMsg(data) {
+    if(typeof(data) == 'string')
+    {
+        switch(data[0]) {
+        case 'u':
+            return {type: 'undo'};
+        case 'r':
+            return {type: 'redo'};
+        case 'l':
+            
+        }
+    }
+    return data;
 };
 
-function encodeMsg(data) {
-    return data;
+function encodeMsg(msg) {
+    switch(msg.type) {
+    case 'undo':
+        return 'u';
+        break;
+    case 'redo':
+        return 'r';
+        break;
+    default:
+        return msg;
+    }
 };
 
 function DummyDebug() {
@@ -64,19 +84,13 @@ function DudlHistory(debug, msgs_in, hpos_in, punchedIn_in) {
     this.doRedo = doRedo;
 
     function doCommand(msg) {
-        if(typeof(eval(msg.type)) != 'undefined') {
+        if(eval('typeof('+msg.type+')') == 'function') {
             eval(msg.type + '(msg.data);');
         }
     };
     this.doCommand = doCommand;
     
     // COMMAND TRACKING ////
-    function hideCanvas(args) {
-    };
-
-    function showCanvas(args) {
-    };
-
     function punchIn(args) {
         // ARGS ////////////
         var data = args.data;
@@ -95,15 +109,6 @@ function DudlHistory(debug, msgs_in, hpos_in, punchedIn_in) {
         punchedIn = false;
     };
 
-    function undo(args) {
-    };
-
-    function redo(args) {
-    };
-
-    function setDrawStyle(args) {
-    };
-
     function drawLine(args) {
         // ARGS //////////
         var x1 = args.x1,
@@ -119,12 +124,6 @@ function DudlHistory(debug, msgs_in, hpos_in, punchedIn_in) {
             });
         }
     };
-
-    function drawLines(args) {
-    };
-
-    function buildHistory() {};
-    function redraw() {};
 
     return true;
 };

@@ -117,6 +117,7 @@ socket.on('connection', function(client) {
     }));
     client.send(encodeMsg({type:'redraw'}));
     client.send(encodeMsg({type:'showCanvas'}));
+    client.send(encodeMsg({type:'enableDrawing'}));
 
     clients.push(client);
 

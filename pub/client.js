@@ -16,6 +16,7 @@ function DudlPad(outer_container, width, height, socket, debug) {
     context.lineCap = 'round';
     context.lineJoin = 'round';
     resizeCanvas();
+    disableDrawing();
     hideCanvas();
 
     var msg_container = document.createElement('ul');
@@ -45,60 +46,8 @@ function DudlPad(outer_container, width, height, socket, debug) {
 
         return [absX * (canvas.width/$(canvas).innerWidth()),
                 absY * (canvas.height/$(canvas).innerHeight())];
-    }
+    };
 
-    $(canvas).mousedown(function(e) {
-    
-        fireEventAndSendMsg(
-            'punchIn',
-            {type:'drawLines', data: {lines: []}}
-        );
-
-        var pos = mousePos(e);
-        mouseX = pos[0];
-        mouseY = pos[1];
-
-        mouseHeld = true;
-        drawing = true;
-
-        $(canvas).toggleClass('hide-cursor',true);
-    });
-
-    $(canvas).mousemove(function(e) {
-
-        if(drawing) {
-            var pos = mousePos(e);
-
-            var coords = {
-                x1: mouseX,
-                y1: mouseY,
-                x2: pos[0],
-                y2: pos[1]
-            };
-
-            fireEventAndSendMsg('drawLine', coords);
-
-            mouseX = pos[0];
-            mouseY = pos[1];
-        }
-    });
-
-    $(canvas).mouseup(function(e) {
-        $(canvas).toggleClass('hide-cursor',false);
-        mouseHeld = false;
-        drawing = false;
-        fireEventAndSendMsg('punchOut',{});
-    });
-
-    $(canvas).mouseleave(function(e) {
-        drawing = false;
-    });
-
-    $(canvas).mouseenter(function(e) {
-        if(mouseHeld) {
-            drawing = true;
-        }
-    });
 
     $(window).keydown(function(e) {
         debug.out('keydown: ' + e.keyCode);
@@ -153,25 +102,55 @@ function DudlPad(outer_container, width, height, socket, debug) {
         $(canvas).show();
     }
 
-    var connectingMsg = userMsg("connecting...");
+    var connectingMsg;
+    function connect() {
+        $(connectingMsg).remove();
+        connectingMsg = userMsg("connecting...");
+        tryConnect(0);
+    };
+
+    function tryConnect(attemptNumber) {
+        attemptNumber = attemptNumber || 0;
+
+        if(attemptNumber > 3) {
+            $(connectingMsg).delay(1000).hide(100,function(){$(this).remove();});
+            $(msgs_container).children().hide(100,function(){$(this).remove();});
+            errorMsg("could not connect :(");
+            return;
+        }
+        
+        socket.connect();
+
+        setTimeout(function() {
+            if(!socket.connected) {
+                tryConnect(attemptNumber + 1);
+            }
+        }, socket.options.connectTimeout + 25);
+    };
+
 
     socket.on('connect', function() {
+        getErrorMsgs().hide(100,function(){$(this).remove();});
         $(connectingMsg).delay(1000).hide(100,function(){$(this).remove();});
         $(userMsg("connected!")).delay(1500).hide(100,function(){$(this).remove();});
     });
 
     socket.on('disconnect', function () {
-        errorMsg("disconnected :(");
+        $(errorMsg("disconnected :(")).delay(2500).hide(100,function(){$(this).remove();});
+        disableDrawing();
+        $(connectingMsg).remove();
+        connectingMsg = userMsg("reconnecting...");
+        tryConnect(0);
     });
+
+    connect();
 
     socket.on('message', function(data) {
         var msg = decodeMsg(data);
-        //debug.out(JSON.stringify(msg));
         eval(msg.type + '(msg.data);');
         history.doCommand(msg);
     });
 
-    socket.connect();
 
     function fireEventAndSendMsg(msgType, argData) {
         var msg = {
@@ -197,6 +176,10 @@ function DudlPad(outer_container, width, height, socket, debug) {
 
     function errorMsg(msg) {
         userMsg(msg,'error');
+    };
+
+    function getErrorMsgs() {
+        return $(msg_container).children('.error');
     };
 
     ////////////////////////////////////////////////////////////
@@ -227,7 +210,6 @@ function DudlPad(outer_container, width, height, socket, debug) {
     function buildHistory(data) {
         // ARGS /////////////////
         var newhist = data.history;
-        //debug.err(JSON.stringify(newhist));
         history = new DudlHistory(
             debug,
             newhist.msgs,
@@ -293,6 +275,65 @@ function DudlPad(outer_container, width, height, socket, debug) {
         ctx.lineTo(x2, y2);
         ctx.closePath();
         ctx.stroke();
+    };
+
+    function enableDrawing() {
+        $(canvas).mousedown(function(e) {
+        
+            fireEventAndSendMsg(
+                'punchIn',
+                {type:'drawLines', data: {lines: []}}
+            );
+
+            var pos = mousePos(e);
+            mouseX = pos[0];
+            mouseY = pos[1];
+
+            mouseHeld = true;
+            drawing = true;
+
+            $(canvas).toggleClass('hide-cursor',true);
+        });
+
+        $(canvas).mousemove(function(e) {
+
+            if(drawing) {
+                var pos = mousePos(e);
+
+                var coords = {
+                    x1: mouseX,
+                    y1: mouseY,
+                    x2: pos[0],
+                    y2: pos[1]
+                };
+
+                fireEventAndSendMsg('drawLine', coords);
+
+                mouseX = pos[0];
+                mouseY = pos[1];
+            }
+        });
+
+        $(canvas).mouseup(function(e) {
+            $(canvas).toggleClass('hide-cursor',false);
+            mouseHeld = false;
+            drawing = false;
+            fireEventAndSendMsg('punchOut',{});
+        });
+
+        $(canvas).mouseleave(function(e) {
+            drawing = false;
+        });
+
+        $(canvas).mouseenter(function(e) {
+            if(mouseHeld) {
+                drawing = true;
+            }
+        });
+    };
+
+    function disableDrawing() {
+        $(canvas).unbind();
     };
 
     return true;
