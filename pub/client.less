@@ -10,6 +10,30 @@
     border-radius: @radius;
 }
 
+.top_left_border_radius (@radius: 5pt) {
+    -moz-border-radius-topleft: @radius;
+    -webkit-border-top-left-radius: @radius;
+    border-top-left-radius: @radius;
+}
+
+.top_right_border_radius (@radius: 5pt) {
+    -moz-border-radius-topright: @radius;
+    -webkit-border-top-right-radius: @radius;
+    border-top-right-radius: @radius;
+}
+
+.bottom_left_border_radius (@radius: 5pt) {
+    -moz-border-radius-bottomleft: @radius;
+    -webkit-border-bottom-left-radius: @radius;
+    border-bottom-left-radius: @radius;
+}
+
+.bottom_right_border_radius (@radius: 5pt) {
+    -moz-border-radius-bottomright: @radius;
+    -webkit-border-bottom-right-radius: @radius;
+    border-bottom-right-radius: @radius;
+}
+
 .text_shadow (@left: 0, @top: 1pt, @penumbra: 4pt, @rgba: rgba(0,0,0,0.9)) {
     text-shadow: @left @top @penumbra @rgba;
 }
@@ -115,19 +139,20 @@ h2 span {
 
 .dudlpad-container {
     position: fixed;
-    right: 200pt;
+    right: 230pt;
     left: 0;
     top: 0;
     bottom: 0;
     padding: 0;
-    margin: 1em;
-    background: #ccc;
+    margin: 10pt;
+    /*background: #ccc;*/
     color: #000;
     overflow: auto;
     text-align: center;
 }
 
 canvas {
+    .rounded_corners;
     z-index: 250;
     background: #fff;
     margin-left: auto;
@@ -139,9 +164,9 @@ canvas {
 .user-msg {
     width: 15em;
     z-index: 252;
-    left: 1em;
+    left: 10pt;
     position: fixed;
-    margin: 1em;
+    margin: 10pt;
     padding: 0;
     float: left;
     text-align: left;
@@ -154,8 +179,8 @@ canvas {
     .text_shadow(0,-1pt,0,rgba(0,0,0,0.6));
     font-weight: bold;
     padding: 2pt;
-    padding-left: 1em;
-    padding-right: 1em;
+    padding-left: 10pt;
+    padding-right: 10pt;
     margin-bottom: 0.33em;
     background: @col1;
     color: #fff;
@@ -178,7 +203,8 @@ canvas {
     width: 100%;
     height: 8em;
     left: 0;
-    bottom: 0;
+    /*bottom: 0;*/
+    top: 0;
     right: 0;
     font-family: 'Droid Sans Mono','DejaVu Sans Mono', sans, sans-serif;
     font-size: 8pt;
@@ -190,3 +216,141 @@ canvas {
     font-weight: bold;
 }
 
+
+/* UCHAT STUFF */
+#chat {
+    .rounded_corners;
+    color: #eee;
+    background: #555;
+    position: fixed;
+    right: 0;
+    top: 0;/*4em;*/
+    bottom: 0;
+    width: 220pt;
+    margin: 10pt;
+}
+
+.msg-bar {
+    margin: 0;
+    bottom: 0;
+}
+
+.msg-input {
+    .rounded_corners;
+    .top_left_border_radius(0);
+    .top_right_border_radius(0);
+    height: 30pt;
+    font-size: 12pt;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+
+.status-msg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 252;
+
+    height: 1.5em;
+
+    display: none;
+    margin: 0;
+    font-size: 2.5em;
+    background: #999;
+    text-align: center;
+    float: left;
+    left: 0;
+    width: 100%;
+    color: #ddd;
+}
+
+.join-form {
+    position: fixed;
+    top: 1.5em;
+    left: 0;
+    right: 0;
+    z-index: 252;
+    font-size: 2.5em;
+    text-align: center;
+    padding-top: 0.25em;
+}
+
+.name {
+    font-size: 0.75em;
+    text-align: center;
+}
+
+form {
+    margin: 0;
+}
+
+input {
+    background: #bbb;
+    border-width: 0;
+    clear: both;
+    margin: 0;
+    outline-width: 0;
+    padding: 0.5em;
+}
+
+input:focus {
+    background: #fff;
+}
+
+input[disabled='disabled'] {
+    background: #ccc;
+    color: #555;
+}
+
+
+.msgs { 
+    list-style-type: none;
+    overflow: auto;
+    top: 0;
+    bottom: 30pt;
+    position: absolute;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+.msgs li {
+    .text_shadow(0,-1pt,0,rgba(0,0,0,0.9));
+    line-height: 1.4em;
+    padding-left: 0.4em;
+}
+
+body.disabled {
+    background: #ccc;
+    color: #555;
+}
+
+.timestamp {
+    color: #888;
+    padding-right: 0.5em;
+}
+
+.msgs.timestamps-off li .timestamp {
+    display: none;
+}
+
+.joined-name, .left-name {
+    font-style: italic;
+    padding-right: 0.5em;
+}
+
+.msg-name {
+    font-weight: bold;
+    padding-right: 0.66em;
+}
+
+.cmd-msg {
+    font-style: italic;
+    color: #444;
+}
+
+.cmd-msg.err {
+    color: #c22;
+}

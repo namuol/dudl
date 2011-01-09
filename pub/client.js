@@ -1,4 +1,4 @@
-function DudlPad(outer_container, width, height, socket, debug) {
+function DudlPad(outer_container, width, height, uchat, socket, debug) {
     // Create inner container:
     var container = document.createElement('div');
     $(container).addClass('dudlpad-container');
@@ -24,6 +24,8 @@ function DudlPad(outer_container, width, height, socket, debug) {
     $(container).append(msg_container);
 
     $(container).append(canvas);
+
+    $(container).hide();
     
     var history = new DudlHistory(debug);
     
@@ -48,9 +50,7 @@ function DudlPad(outer_container, width, height, socket, debug) {
                 absY * (canvas.height/$(canvas).innerHeight())];
     };
 
-
     $(window).keydown(function(e) {
-        debug.out('keydown: ' + e.keyCode);
         if(e.keyCode == '16') { // SHIFT
             shiftPressed = true;
         } else if(e.keyCode == '17' ||
@@ -66,13 +66,70 @@ function DudlPad(outer_container, width, height, socket, debug) {
     });
 
     $(window).keyup(function(e) {
-        debug.out('keyup: ' + e.keyCode);
         if(e.keyCode == '16') { // SHIFT
             shiftPressed = false;
         } else if(e.keyCode == '17' ||
                   e.keyCode == '224') { // CTRL
             ctrlPressed = false;
         }
+    });
+
+    $(uchat.join_form).submit( function() {
+        sendMsg('chatHandler', {
+            type: 'joined',
+            name: $(uchat.name).val()
+        });
+        $(uchat.status_msg).hide();
+        $(uchat.join_form).hide();
+        $(uchat.chat_panel).show();
+        $(container).show();
+        return false;
+    });
+
+    $(uchat.msg_form).submit( function() {
+        var msg = $(uchat.msg_text).val();
+        if(msg[0] == '/') {
+            uchat.tryToDoCommand(msg);
+        } else {
+            sendMsg('chatHandler', {
+                type: 'msg',
+                msg: msg
+            });
+        }
+        
+        uchat.msgHistoryPos = uchat.msgHistory.push(msg);
+
+        $(uchat.msg_text).val('');
+        return false;
+    });
+
+    $(uchat.msg_text).keydown(function(e) {
+        switch(e.keyCode) {
+        case 38: // UP
+            if(uchat.msgHistoryPos >= uchat.msgHistory.length) {
+                currentMsg = $(uchat.msg_text).val();
+            }
+            uchat.msgHistoryPos = uchat.msgHistoryPos <= 0 ? 0 : uchat.msgHistoryPos - 1;
+            $(uchat.msg_text).focus();
+            $(uchat.msg_text).val(uchat.msgHistory[uchat.msgHistoryPos]);
+            return false;
+            break;
+        case 40: // DOWN
+            if(uchat.msgHistoryPos <= uchat.msgHistory.length) {
+                uchat.msgHistoryPos = uchat.msgHistoryPos >= uchat.msgHistory.length
+                    ? uchat.msgHistory.length
+                    : uchat.msgHistoryPos + 1;
+                $(uchat.msg_text).focus();
+                $(uchat.msg_text).val(uchat.msgHistory[uchat.msgHistoryPos]);
+            } else {
+                $(uchat.msg_text).focus();
+                $(uchat.msg_text).val(currentMsg);
+            }
+            return false;
+            break;
+        default:
+            currentMsg = $(uchat.msg_text).val();
+        } 
     });
 
     // INPUT EVENTS
@@ -130,6 +187,12 @@ function DudlPad(outer_container, width, height, socket, debug) {
 
 
     socket.on('connect', function() {
+        $(uchat.status_msg).html('who are you?');
+        $(uchat.status_msg).show();
+        $(uchat.join_form).show();
+        $(uchat.name).focus();
+        $('input').attr('disabled',false);
+
         getErrorMsgs().hide(100,function(){$(this).remove();});
         $(connectingMsg).delay(1000).hide(100,function(){$(this).remove();});
         $(userMsg("connected!")).delay(1500).hide(100,function(){$(this).remove();});
@@ -147,18 +210,27 @@ function DudlPad(outer_container, width, height, socket, debug) {
 
     socket.on('message', function(data) {
         var msg = decodeMsg(data);
+        //debug.err(JSON.stringify(msg));
         eval(msg.type + '(msg.data);');
         history.doCommand(msg);
     });
 
-
-    function fireEventAndSendMsg(msgType, argData) {
+    function sendMsg(msgType, argData) {
         var msg = {
             type: msgType,
             data: argData
         };
+        //debug.out(JSON.stringify(msg));
         socket.send(encodeMsg(msg));
+    };
+
+    function fireEventAndSendMsg(msgType, argData) {
+        sendMsg(msgType, argData);
         eval(msgType + '(argData);');
+        var msg = {
+            type: msgType,
+            data: argData
+        };
         history.doCommand(msg);
     };
 
@@ -334,6 +406,19 @@ function DudlPad(outer_container, width, height, socket, debug) {
 
     function disableDrawing() {
         $(canvas).unbind();
+    };
+
+    function chatHandler(argData) {
+        // ARGS ////////////////
+        var type = argData.type;
+        // ARGS ?///////////////
+        //debug.out(JSON.stringify(argData));
+        var jtpl = jQuery.createTemplate($('#' + type + '-jtpl').val());
+        var txt = jQuery.processTemplateToText(jtpl, argData);
+        $(uchat.msgs).append(txt);
+        
+        $(uchat.msgs)[0].scrollTop = $(uchat.msgs)[0].scrollHeight;
+        $(uchat.msg_text).focus();
     };
 
     return true;

@@ -81,12 +81,14 @@ function MyDebug() {
     return true;
 };
 
-function broadcast(msg, client) {
+function chatLog(msg) {
     log.push(msg);
     if(log.length > config.max_log_length) {
         log = _.tail(log);
     }
+};
 
+function broadcast(msg, client) {
     var data = encodeMsg(msg);
 
     _.without(clients,client).forEach(function(c,index,array) {
@@ -95,11 +97,18 @@ function broadcast(msg, client) {
     });
 
     //console.log('BCAST: ' + JSON.stringify(msg));
-}
+};
 
 socket.on('connection', function(client) {
     client.send(encodeMsg({type:'hideCanvas'}));
     history.cleanMsgs();
+    
+    // Send chat log:
+    log.forEach(function(msg,index,array) {
+        client.send(encodeMsg(msg));
+    });
+
+    // Send current drawing history:
     client.send(encodeMsg({
         type: 'buildHistory',
         data: {
@@ -110,33 +119,53 @@ socket.on('connection', function(client) {
             }
         }
     }));
-    console.log(JSON.stringify({
-                msgs: history.msgs,
-                hpos: history.hpos(),
-                punchedIn: history.punchedIn
-    }));
+
     client.send(encodeMsg({type:'redraw'}));
     client.send(encodeMsg({type:'showCanvas'}));
     client.send(encodeMsg({type:'enableDrawing'}));
 
-    clients.push(client);
 
     client.on('message', function(data) {
         var msg = decodeMsg(data);
         history.doCommand(msg);
-        //console.log('RECV: ' + client + ': ' + JSON.stringify(msg));
+
+        // Default: don't rebroadcast the message to the client
+        var clientToIgnore = client; 
+
         switch(msg.type) {
+        case 'chatHandler':
+            clientToIgnore = null; // Broadcast msg back to all clients.
+
+            var chatData = msg.data;
+            chatData.time = (new Date()).getTime();
+
+            switch(chatData.type) {
+            case 'joined':
+                // Ignore clients that have already joined:
+                if(_.indexOf(clients, client) != -1)
+                    break;
+
+                clients.push(client);
+                client.name = chatData.name;
+                console.log(client.name + ' joined');
+                break;
+            case 'msg':
+                if(clients.indexOf(client) == -1) return;
+                chatData.name = client.name;
+                console.log(client.name + ': ' + chatData.msg);
+                break;
+            }
+
+            chatLog(msg);
+            break;
         case 'undo':
             history.doUndo();
             break;
         case 'redo':
             history.doRedo();
             break;
-        default:
-            break;
         }
-        broadcast(msg, client);
-
+        broadcast(msg, clientToIgnore);
     });
 
     client.on('disconnect', function() {
