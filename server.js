@@ -100,7 +100,8 @@ function broadcast(msg, client) {
 };
 
 socket.on('connection', function(client) {
-    client.send(encodeMsg({type:'hideCanvas'}));
+    clients.push(client);
+
     history.cleanMsgs();
     
     // Send chat log:
@@ -122,7 +123,6 @@ socket.on('connection', function(client) {
 
     client.send(encodeMsg({type:'redraw'}));
     client.send(encodeMsg({type:'showCanvas'}));
-    client.send(encodeMsg({type:'enableDrawing'}));
 
 
     client.on('message', function(data) {
@@ -131,6 +131,7 @@ socket.on('connection', function(client) {
 
         // Default: don't rebroadcast the message to the client
         var clientToIgnore = client; 
+
 
         switch(msg.type) {
         case 'chatHandler':
@@ -142,15 +143,18 @@ socket.on('connection', function(client) {
             switch(chatData.type) {
             case 'joined':
                 // Ignore clients that have already joined:
-                if(_.indexOf(clients, client) != -1)
+                if(typeof(client.name) !== 'undefined')
                     break;
 
-                clients.push(client);
                 client.name = chatData.name;
+                client.send(encodeMsg({type:'enableDrawing'}));
                 console.log(client.name + ' joined');
                 break;
             case 'msg':
-                if(clients.indexOf(client) == -1) return;
+                // Ignore clients that haven't joined:
+                if(client.name == undefined)
+                    return;
+
                 chatData.name = client.name;
                 console.log(client.name + ': ' + chatData.msg);
                 break;
@@ -171,13 +175,18 @@ socket.on('connection', function(client) {
     client.on('disconnect', function() {
         if(_.indexOf(clients, client) != -1) {
             clients = _.without(clients, client);
-            /*
-            broadcast({
-                type: 'left',
-                name: client.name
-            });
-            console.log(client.name + ' left');
-            */
+            if(client.name != undefined) {
+                var msg = {
+                    type:'chatHandler',
+                    data:{
+                        type: 'left',
+                        name: client.name
+                    }
+                };
+                broadcast(msg, null);
+                chatLog(msg);
+                console.log(client.name + ' left');
+            }
         }
     });
 });

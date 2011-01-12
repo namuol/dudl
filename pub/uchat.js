@@ -68,8 +68,7 @@ function uchat(container, buildUI) {
 
 
     $(chat_panel).addClass('disabled');
-    $(join_form).hide();
-    $(chat_panel).hide();
+    $(name).hide();
     $(status_msg).html('connecting...');
 
     timestamps('off');
@@ -127,9 +126,9 @@ function uchat(container, buildUI) {
     this.msgHistory = msgHistory;
 
     $(msg_text).attr('autocomplete','off');
+    $(msg_text).attr('disabled','disabled');
 
     $(name).focus();
-    //$(msg_text).attr('disabled',true);
 
     function userError(msg) {
         userMsg(msg, '#cmd-err-jtpl');

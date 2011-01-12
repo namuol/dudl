@@ -247,6 +247,8 @@ canvas {
 }
 
 .status-msg {
+    .text_shadow(0,1pt,1pt, rgba(0,0,0,0.5));
+
     position: fixed;
     top: 0;
     left: 0;
@@ -255,10 +257,9 @@ canvas {
 
     height: 1.5em;
 
-    display: none;
+    background: rgba(0,0,0,0.5);
     margin: 0;
     font-size: 2.5em;
-    background: #999;
     text-align: center;
     float: left;
     left: 0;
@@ -267,10 +268,12 @@ canvas {
 }
 
 .join-form {
+    background: rgba(0,0,0,0.5);
     position: fixed;
     top: 1.5em;
     left: 0;
     right: 0;
+    bottom: 0;
     z-index: 252;
     font-size: 2.5em;
     text-align: center;
@@ -278,8 +281,11 @@ canvas {
 }
 
 .name {
+    .rounded_corners;
+    .box_shadow(0,1pt,1pt, rgba(0,0,0,0.5));
     font-size: 0.75em;
     text-align: center;
+    width: 16em;
 }
 
 form {
@@ -287,7 +293,7 @@ form {
 }
 
 input {
-    background: #bbb;
+    background: #ccc;
     border-width: 0;
     clear: both;
     margin: 0;
@@ -296,7 +302,7 @@ input {
 }
 
 input:focus {
-    background: #fff;
+    background: #eee;
 }
 
 input[disabled='disabled'] {
@@ -348,9 +354,10 @@ body.disabled {
 
 .cmd-msg {
     font-style: italic;
-    color: #444;
+    color: #eee;
 }
 
 .cmd-msg.err {
-    color: #c22;
+    color: #e22;
+    font-weight: bold;
 }

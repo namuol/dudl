@@ -17,7 +17,7 @@ function DudlPad(outer_container, width, height, uchat, socket, debug) {
     context.lineJoin = 'round';
     resizeCanvas();
     disableDrawing();
-    hideCanvas();
+    //hideCanvas();
 
     var msg_container = document.createElement('ul');
     $(msg_container).addClass('user-msg');
@@ -25,8 +25,6 @@ function DudlPad(outer_container, width, height, uchat, socket, debug) {
 
     $(container).append(canvas);
 
-    $(container).hide();
-    
     var history = new DudlHistory(debug);
     
     ///////////////////////////////////////////////////////////////////////////
@@ -50,30 +48,6 @@ function DudlPad(outer_container, width, height, uchat, socket, debug) {
                 absY * (canvas.height/$(canvas).innerHeight())];
     };
 
-    $(window).keydown(function(e) {
-        if(e.keyCode == '16') { // SHIFT
-            shiftPressed = true;
-        } else if(e.keyCode == '17' ||
-                  e.keyCode == '224') { // CTRL
-            ctrlPressed = true;
-        } else if(e.keyCode == '89') { // Y
-            if(!history.punchedIn && ctrlPressed)
-                fireEventAndSendMsg('redo',{});
-        } else if(e.keyCode == '90') { // Z
-            if(!history.punchedIn && ctrlPressed)
-                fireEventAndSendMsg('undo',{});
-        }
-    });
-
-    $(window).keyup(function(e) {
-        if(e.keyCode == '16') { // SHIFT
-            shiftPressed = false;
-        } else if(e.keyCode == '17' ||
-                  e.keyCode == '224') { // CTRL
-            ctrlPressed = false;
-        }
-    });
-
     $(uchat.join_form).submit( function() {
         sendMsg('chatHandler', {
             type: 'joined',
@@ -82,7 +56,7 @@ function DudlPad(outer_container, width, height, uchat, socket, debug) {
         $(uchat.status_msg).hide();
         $(uchat.join_form).hide();
         $(uchat.chat_panel).show();
-        $(container).show();
+        $(uchat.msg_text).attr('disabled',false);
         return false;
     });
 
@@ -185,13 +159,11 @@ function DudlPad(outer_container, width, height, uchat, socket, debug) {
         }, socket.options.connectTimeout + 25);
     };
 
-
     socket.on('connect', function() {
         $(uchat.status_msg).html('who are you?');
-        $(uchat.status_msg).show();
-        $(uchat.join_form).show();
+        $(uchat.name).show();
         $(uchat.name).focus();
-        $('input').attr('disabled',false);
+        $(uchat.name).attr('disabled',false);
 
         getErrorMsgs().hide(100,function(){$(this).remove();});
         $(connectingMsg).delay(1000).hide(100,function(){$(this).remove();});
@@ -350,6 +322,30 @@ function DudlPad(outer_container, width, height, uchat, socket, debug) {
     };
 
     function enableDrawing() {
+        $(window).keydown(function(e) {
+            if(e.keyCode == '16') { // SHIFT
+                shiftPressed = true;
+            } else if(e.keyCode == '17' ||
+                      e.keyCode == '224') { // CTRL
+                ctrlPressed = true;
+            } else if(e.keyCode == '89') { // Y
+                if(!history.punchedIn && ctrlPressed)
+                    fireEventAndSendMsg('redo',{});
+            } else if(e.keyCode == '90') { // Z
+                if(!history.punchedIn && ctrlPressed)
+                    fireEventAndSendMsg('undo',{});
+            }
+        });
+
+        $(window).keyup(function(e) {
+            if(e.keyCode == '16') { // SHIFT
+                shiftPressed = false;
+            } else if(e.keyCode == '17' ||
+                      e.keyCode == '224') { // CTRL
+                ctrlPressed = false;
+            }
+        });
+
         $(canvas).mousedown(function(e) {
         
             fireEventAndSendMsg(
@@ -405,6 +401,7 @@ function DudlPad(outer_container, width, height, uchat, socket, debug) {
     };
 
     function disableDrawing() {
+        $(window).unbind();
         $(canvas).unbind();
     };
 
