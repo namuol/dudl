@@ -1,0 +1,150 @@
+body {
+  /*background: #ccc;*/
+
+  padding: 0;
+  margin: 0;
+  border-style: none;
+  font-family: 'Droid Sans Mono', 'DejaVu Sans Mono', 'Courier New';
+}
+.msg-bar {
+  margin: 0;
+  bottom: 0;
+}
+.msg-input {
+  -moz-border-radius-topleft: 0;
+  -webkit-border-top-left-radius: 0;
+  border-top-left-radius: 0;
+  -moz-border-radius-topright: 0;
+  -webkit-border-top-right-radius: 0;
+  border-top-right-radius: 0;
+  height: 30pt;
+  font-size: 12pt;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
+.status-msg {
+  text-shadow: 0 1pt 1pt rgba(0, 0, 0, 0.5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 252;
+  height: 1.5em;
+  background: rgba(0, 0, 0, 0.5);
+  margin: 0;
+  font-size: 2.5em;
+  text-align: center;
+  float: left;
+  left: 0;
+  width: 100%;
+  color: #ddd;
+}
+.join-form {
+  background: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  top: 1.5em;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 252;
+  font-size: 2.5em;
+  text-align: center;
+  padding-top: 0.25em;
+}
+.name {
+  -moz-border-radius: 4pt;
+  -webkit-border-radius: 4pt;
+  border-radius: 4pt;
+  -moz-box-shadow: 0 1pt 1pt rgba(0, 0, 0, 0.5);
+  -webkit-box-shadow: 0 1pt 1pt rgba(0, 0, 0, 0.5);
+  box-shadow: 0 1pt 1pt rgba(0, 0, 0, 0.5);
+  font-size: 0.75em;
+  text-align: center;
+  width: 18em;
+}
+form {
+  margin: 0;
+}
+input {
+  background: #ccc;
+  border-width: 0;
+  clear: both;
+  margin: 0;
+  outline-width: 0;
+  padding: 0.5em;
+}
+input:focus {
+  background: #eee;
+}
+input[disabled='disabled'] {
+  background: #ccc;
+  color: #555;
+}
+.msgs {
+  list-style-type: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+  top: 0;
+  bottom: 30pt;
+  position: absolute;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  background: #666;
+  color: #fff;
+}
+.msgs li {
+  text-shadow: 0 -1pt 0 rgba(0, 0, 0, 0.6);
+  line-height: 1.4em;
+  padding-left: 0.4em;
+}
+body.disabled {
+  background: #ccc;
+  color: #555;
+}
+.timestamp {
+  color: #aaa;
+  padding-right: 0.5em;
+}
+.msgs.timestamps-off li .timestamp {
+  display: none;
+}
+li.joined, li.left {
+  background: #777;
+}
+.joined-name, .left-name {
+  font-style: italic;
+  padding-right: 0.5em;
+}
+.msg-name {
+  font-weight: bold;
+  padding-right: 0.66em;
+}
+.clickable-name {
+  cursor: pointer;
+}
+.clickable-name:hover {
+  text-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  text-decoration: underline;
+}
+.clickable-name:active {
+  text-shadow: 0 -1pt 0 rgba(0, 0, 0, 0.6);
+}
+.cmd-msg {
+  color: #eee;
+  background: #557;
+}
+.cmd-msg.err {
+  color: #fff;
+  background: #755;
+}
+.attn {
+  background: #775 !important;
+}
+li.listusers-user {
+  padding-left: 15pt;
+}
+li.alt {
+  background: #555;
+}

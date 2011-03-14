@@ -1,34 +1,5 @@
 // Shared between client and server.
 
-// TODO: compress/simplify data here
-function decodeMsg(data) {
-    if(typeof(data) == 'string')
-    {
-        switch(data[0]) {
-        case 'u':
-            return {type: 'undo'};
-        case 'r':
-            return {type: 'redo'};
-        case 'l':
-            
-        }
-    }
-    return data;
-};
-
-function encodeMsg(msg) {
-    switch(msg.type) {
-    case 'undo':
-        return 'u';
-        break;
-    case 'redo':
-        return 'r';
-        break;
-    default:
-        return msg;
-    }
-};
-
 function DummyDebug() {
     this.out = function() {};
     this.err = function() {};
@@ -38,7 +9,7 @@ function DudlHistory(debug, msgs_in, hpos_in, punchedIn_in) {
     var msgs = msgs_in || [];
     this.msgs = msgs;
     this.punchedIn = punchedIn_in || false;
-    var hpos = hpos_in !=undefined ? hpos_in : -1;
+    var hpos = hpos_in !== undefined ? hpos_in : -1;
 
     function cleanMsgs() {
         // TODO
@@ -68,7 +39,7 @@ function DudlHistory(debug, msgs_in, hpos_in, punchedIn_in) {
     this.doUndo = doUndo;
 
     function canRedo() {
-        return typeof(msgs[hpos+1]) != 'undefined' 
+        return typeof(msgs[hpos+1]) !== 'undefined' 
             && msgs[hpos+1] != null;
     };
     this.canRedo = canRedo;

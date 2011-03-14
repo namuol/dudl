@@ -1,0 +1,6 @@
+[submodule "support/uchat"]
+	path = support/uchat
+	url = git@github.com:namuol/uchat.git
+[submodule "support/multio"]
+	path = support/multio
+	url = git@github.com:namuol/MULTiO.git

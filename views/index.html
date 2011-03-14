@@ -1,0 +1,74 @@
+<html>
+    <head>
+        <title>d&uuml;dl</title>
+        <script src='http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js'></script>
+        <script src='/socket.io/socket.io.js'></script>
+        <script src='/javascripts/jquery.Storage.js'></script>
+        <script src='/javascripts/json2.js'></script>
+        <script src='/javascripts/jquery-jtemplates.js'></script>
+        <script src='/javascripts/underscore.js'></script>
+        <script src='/javascripts/shared.js'></script>
+        <script src='/javascripts/multio.js'></script>
+        <script src='/javascripts/uchat.js'></script>
+        <script src='/javascripts/client.js'></script>
+        <link rel='stylesheet' type='text/css' href='/stylesheets/client.css' >
+        <link rel='stylesheet' type='text/css' href='/stylesheets/uchat.css' >
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Droid+Sans">
+    </head>
+    <body>
+        <!--h2>
+            <span class='d1'>d</span><span class='ue'>&uuml;</span><span class='d2'>d</span><span class='l1'>l</span>
+        </h2>
+        <div class='version'>PRE-ALPHA</div-->
+        <div id='chat'></div>
+        <div id='cdiv'></div>
+
+        <script type='text/javascript'>
+            var socket = new io.Socket(),
+                u = UCHAT($('#chat'), socket);//,
+                //debug = new DudlDebug();
+
+            //$(debug.elem()).show();
+
+            $('#chat').append(u.status_msg);
+            $('#chat').append(u.join_form);
+            $('#chat').append(u.msgs);
+            $('#chat').append(u.msg_bar);
+
+            socket.on('disconnect', function () {
+                u.userError('Disconnected!');
+                $(u.msg_text).attr('disabled', 'disabled');
+                setTimeout(function () {
+                    $(u.join_form).show();
+                    $(u.name_text).hide();
+                    $(u.status_msg).show();
+                    u.tryConnect();
+                }, 500);
+            });
+
+            var d = DUDL("#cdiv", 640,400, u, socket, null);
+        </script>
+
+        <textarea id='joined-jtpl' style='display:none'>
+            <li><span class='timestamp'>{u.timeString($T.time)}</span><span class='joined-name'>{$T.name}</span><span class='joined'>joined</span></li>
+        </textarea>
+
+        <textarea id='left-jtpl' style='display:none'>
+            <li><span class='timestamp'>{u.timeString($T.time)}</span><span class='left-name'>{$T.name}</span><span class='left'>left</span></li>
+        </textarea>
+
+        <textarea id='msg-jtpl' style='display:none'>
+            <li><span class='timestamp'>{u.timeString($T.time)}</span>
+            <span class='msg-name'>{$T.name}:</span><span class='msg'>{$T.msg}</span></li>
+        </textarea>
+
+        <textarea id='cmd-jtpl' style='display:none'>
+            <li class='cmd-msg'>{$T.msg}</li>
+        </textarea>
+
+        <textarea id='cmd-err-jtpl' style='display:none'>
+            <li class='cmd-msg err'>{$T.msg}</li>
+        </textarea>
+
+    </body>
+</html>

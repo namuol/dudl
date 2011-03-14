@@ -1,193 +1,55 @@
-var http        = require('http');
-var connect     = require('connect');
-var fs          = require('fs');
-var io          = require('socket.io');
-var sanitizer   = require('sanitizer');
-var _           = require('underscore');
-var less        = require('less');
+/*jslint
+    white: true,
+    onevar: true,
+    undef: true,
+    newcap: true,
+    regexp: true,
+    plusplus: true,
+    bitwise: true,
+    maxerr: 50,
+    indent: 4 */
+/*global
+    setTimeout,
+    console,
+    __dirname,
+    require*/
 
-// Basic server setup: ///////////////////////////////////
+var connect = require('connect'),
+    config  = require('./config'),
+    http    = require('http'),
+    mio     = require('./support/multio/lib/multio'),
+    uchat   = require('./support/uchat/lib/uchat'),
+    io      = require('socket.io'),
+    fs      = require('fs');
 
-var config;
+fs.readFile(__dirname + '/views/index.html', function (err, data) {
+    var clientHTML = data,
+    baseServer,
+    server,
+    socket,
+    mocket;
 
-eval(fs.readFileSync('config.js','utf8'));
-eval(fs.readFileSync('pub/shared.js','utf8'));
-
-function readClientHTML() {
-    return fs.readFileSync('pub/client.html', 'utf8');
-}
-
-var clientHTML = readClientHTML();
-fs.watchFile('pub/client.html', function(current, previous) {
-    try {
-        clientHTML = readClientHTML();
-    } catch(e) {
-        console.log('Problem reading client.html! Keeping old file!');
-    }
-});
-
-function renderClientCSS() {
-    var renderedCss;
-
-    less.render(fs.readFileSync('pub/client.less','utf8'), function(err, css) {
-        if(err) {
-            throw err;
-        } else {
-            renderedCss = css;
-        }
+    baseServer = http.createServer(function (req, res) {
+        res.writeHead(200, {'Content-Type': 'text/html'});
+        res.write(clientHTML);
+        res.end();
     });
 
-    fs.writeFileSync('pub/client.css', renderedCss, 'utf8');
-}
-try {
-renderClientCSS();
-} catch(e) { console.log(e);}
+    server = connect.createServer(
+        connect.compiler({src: __dirname + '/public', enable: ['less']}),
+        connect.staticProvider(__dirname + '/public'),
+        baseServer
+    );
 
-fs.watchFile('pub/client.less', function(current, previous) {
-    try {
-        renderClientCSS();
-    } catch(e) {
-        console.log('Problem reading/parsing client.less! Keeping old file!');
-        console.log(e);
-    }
-});
-
-var baseServer = http.createServer(function(req, res) {
-    res.writeHead(200,{'Content-Type':'text/html'});
-    res.write(clientHTML);
-    res.end();
-});
-
-var server = connect.createServer(
-    //connect.logger(),
-    connect.staticProvider(__dirname + '/pub'),
-    baseServer
-);
-
-server.listen(config.port);
-console.log("Listening on port " + config.port);
-
-// END Basic server setup ////////////////////////////////
-
-// Socket.IO setup ///////////////////////////////////////
-var socket = io.listen(server);
-var clients = [];
-var log = [];
-var history = new DudlHistory(new MyDebug());
-
-function MyDebug() {
-    this.out = function(msg){console.log(msg);}
-    this.err = function(msg){console.log(msg);}
-    return true;
-};
-
-function chatLog(msg) {
-    log.push(msg);
-    if(log.length > config.max_log_length) {
-        log = _.tail(log);
-    }
-};
-
-function broadcast(msg, client) {
-    var data = encodeMsg(msg);
-
-    _.without(clients,client).forEach(function(c,index,array) {
-        if(typeof(c) == 'undefined') break;
-        c.send(data);
-    });
-
-    //console.log('BCAST: ' + JSON.stringify(msg));
-};
-
-socket.on('connection', function(client) {
-    clients.push(client);
-
-    history.cleanMsgs();
-    
-    // Send chat log:
-    log.forEach(function(msg,index,array) {
-        client.send(encodeMsg(msg));
-    });
-
-    // Send current drawing history:
-    client.send(encodeMsg({
-        type: 'buildHistory',
-        data: {
-            history: {
-                msgs: history.msgs,
-                hpos: history.hpos(),
-                punchedIn: history.punchedIn
+    server.listen(config.port);
+    console.log('Server listening on port ' + config.port + '.');
+    socket = io.listen(server);
+    mocket = mio.listen(socket);
+    uchat.listen(mocket, {
+        callbacks: {
+            'uchat-msg': function () {
+                return true;
             }
         }
-    }));
-
-    client.send(encodeMsg({type:'redraw'}));
-    client.send(encodeMsg({type:'showCanvas'}));
-
-
-    client.on('message', function(data) {
-        var msg = decodeMsg(data);
-        history.doCommand(msg);
-
-        // Default: don't rebroadcast the message to the client
-        var clientToIgnore = client; 
-
-
-        switch(msg.type) {
-        case 'chatHandler':
-            clientToIgnore = null; // Broadcast msg back to all clients.
-
-            var chatData = msg.data;
-            chatData.time = (new Date()).getTime();
-
-            switch(chatData.type) {
-            case 'joined':
-                // Ignore clients that have already joined:
-                if(typeof(client.name) !== 'undefined')
-                    break;
-
-                client.name = chatData.name;
-                client.send(encodeMsg({type:'enableDrawing'}));
-                console.log(client.name + ' joined');
-                break;
-            case 'msg':
-                // Ignore clients that haven't joined:
-                if(client.name == undefined)
-                    return;
-
-                chatData.name = client.name;
-                console.log(client.name + ': ' + chatData.msg);
-                break;
-            }
-
-            chatLog(msg);
-            break;
-        case 'undo':
-            history.doUndo();
-            break;
-        case 'redo':
-            history.doRedo();
-            break;
-        }
-        broadcast(msg, clientToIgnore);
-    });
-
-    client.on('disconnect', function() {
-        if(_.indexOf(clients, client) != -1) {
-            clients = _.without(clients, client);
-            if(client.name != undefined) {
-                var msg = {
-                    type:'chatHandler',
-                    data:{
-                        type: 'left',
-                        name: client.name
-                    }
-                };
-                broadcast(msg, null);
-                chatLog(msg);
-                console.log(client.name + ' left');
-            }
-        }
-    });
+    }); 
 });
-// END Socket.IO setup ///////////////////////////////////

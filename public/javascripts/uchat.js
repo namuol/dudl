@@ -1,0 +1,1 @@
+../../support/uchat/public/javascripts/uchat.js

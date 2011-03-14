@@ -48,90 +48,13 @@ function DudlPad(outer_container, width, height, uchat, socket, debug) {
                 absY * (canvas.height/$(canvas).innerHeight())];
     };
 
-    $(uchat.join_form).submit( function() {
-        sendMsg('chatHandler', {
-            type: 'joined',
-            name: $(uchat.name).val()
-        });
-        $(uchat.status_msg).hide();
-        $(uchat.join_form).hide();
-        $(uchat.chat_panel).show();
-        $(uchat.msg_text).attr('disabled',false);
-        return false;
-    });
-
-    $(uchat.msg_form).submit( function() {
-        var msg = $(uchat.msg_text).val();
-        if(msg[0] == '/') {
-            uchat.tryToDoCommand(msg);
-        } else {
-            sendMsg('chatHandler', {
-                type: 'msg',
-                msg: msg
-            });
-        }
-        
-        uchat.msgHistoryPos = uchat.msgHistory.push(msg);
-
-        $(uchat.msg_text).val('');
-        return false;
-    });
-
-    $(uchat.msg_text).keydown(function(e) {
-        switch(e.keyCode) {
-        case 38: // UP
-            if(uchat.msgHistoryPos >= uchat.msgHistory.length) {
-                currentMsg = $(uchat.msg_text).val();
-            }
-            uchat.msgHistoryPos = uchat.msgHistoryPos <= 0 ? 0 : uchat.msgHistoryPos - 1;
-            $(uchat.msg_text).focus();
-            $(uchat.msg_text).val(uchat.msgHistory[uchat.msgHistoryPos]);
-            return false;
-            break;
-        case 40: // DOWN
-            if(uchat.msgHistoryPos <= uchat.msgHistory.length) {
-                uchat.msgHistoryPos = uchat.msgHistoryPos >= uchat.msgHistory.length
-                    ? uchat.msgHistory.length
-                    : uchat.msgHistoryPos + 1;
-                $(uchat.msg_text).focus();
-                $(uchat.msg_text).val(uchat.msgHistory[uchat.msgHistoryPos]);
-            } else {
-                $(uchat.msg_text).focus();
-                $(uchat.msg_text).val(currentMsg);
-            }
-            return false;
-            break;
-        default:
-            currentMsg = $(uchat.msg_text).val();
-        } 
-    });
-
     // INPUT EVENTS
     ///////////////////////////////////////////////////////////////////////////
+
 
     $(window).resize(function(e) {
         resizeCanvas();
     });
-
-    function resizeCanvas() {
-        $(canvas).hide();
-        var ratio = canvas.width / canvas.height; 
-        var cwidth = $(container).innerWidth(),
-            cheight = $(container).innerHeight();
-        var cratio = cwidth / cheight;
-        var width, height;
-        if(cratio > ratio) {
-            height = cheight;
-            width = height * ratio;
-        } else {
-            width = cwidth;
-            height = width / ratio;
-        }
-
-        $(canvas).width(width);
-        $(canvas).height(height);
-        $(canvas).show();
-    }
 
     var connectingMsg;
     function connect() {
@@ -157,7 +80,7 @@ function DudlPad(outer_container, width, height, uchat, socket, debug) {
                 tryConnect(attemptNumber + 1);
             }
         }, socket.options.connectTimeout + 25);
-    };
+    }
 
     socket.on('connect', function() {
         $(uchat.status_msg).html('who are you?');
@@ -179,32 +102,6 @@ function DudlPad(outer_container, width, height, uchat, socket, debug) {
     });
 
     connect();
-
-    socket.on('message', function(data) {
-        var msg = decodeMsg(data);
-        //debug.err(JSON.stringify(msg));
-        eval(msg.type + '(msg.data);');
-        history.doCommand(msg);
-    });
-
-    function sendMsg(msgType, argData) {
-        var msg = {
-            type: msgType,
-            data: argData
-        };
-        //debug.out(JSON.stringify(msg));
-        socket.send(encodeMsg(msg));
-    };
-
-    function fireEventAndSendMsg(msgType, argData) {
-        sendMsg(msgType, argData);
-        eval(msgType + '(argData);');
-        var msg = {
-            type: msgType,
-            data: argData
-        };
-        history.doCommand(msg);
-    };
 
     function userMsg(msg, klass) {
         var msgElem = document.createElement('li');
@@ -403,19 +300,6 @@ function DudlPad(outer_container, width, height, uchat, socket, debug) {
     function disableDrawing() {
         $(window).unbind();
         $(canvas).unbind();
-    };
-
-    function chatHandler(argData) {
-        // ARGS ////////////////
-        var type = argData.type;
-        // ARGS ?///////////////
-        //debug.out(JSON.stringify(argData));
-        var jtpl = jQuery.createTemplate($('#' + type + '-jtpl').val());
-        var txt = jQuery.processTemplateToText(jtpl, argData);
-        $(uchat.msgs).append(txt);
-        
-        $(uchat.msgs)[0].scrollTop = $(uchat.msgs)[0].scrollHeight;
-        $(uchat.msg_text).focus();
     };
 
     return true;
