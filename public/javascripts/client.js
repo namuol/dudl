@@ -54,15 +54,56 @@ DUDL = function (outer_container, width, height, uchat, socket, debug) {
         $(ui_in.canvas).show();
     }
 
+    function mousePos(e, canvas) {
+        var canvasPos = $(canvas).offset(),
+            absX = e.pageX - canvasPos.left,
+            absY = e.pageY - canvasPos.top;
+
+        return [absX * (canvas.width / $(canvas).innerWidth()),
+                absY * (canvas.height / $(canvas).innerHeight())];
+    }
+
     // UTILITY FUNCTIONS
     ////////////////////////////////////////////////////////////
 
     ui = (function () {
+        ////////////////////////////////////////////////////////////
+        // REMOTE-ABLE EVENT FUNCTIONS
+
+        function hideCanvas() {
+            $(ui.canvas).hide();
+        }
+        this.hideCanvas = hideCanvas;
+
+        function showCanvas() {
+            $(ui.canvas).show();
+        }
+        this.showCanvas = showCanvas;
+
+        function drawLines(coords) {
+            var ctx = ui.context,
+                i;
+            ctx.beginPath();
+            for (i = 0; i < coords.length; i += 4) {
+                ctx.moveTo(coords[i], coords[i + 1]);
+                ctx.lineTo(coords[i + 2], coords[i + 3]);
+            }
+            ctx.closePath();
+            ctx.stroke();
+        }
+        this.drawLines = drawLines;
+
+        // REMOTE-ABLE EVENT FUNCTIONS
+        ////////////////////////////////////////////////////////////
+
         // Create inner container:
         var container = document.createElement('div'),
             canvas = document.createElement('canvas'),
             context = canvas.getContext('2d'),
-            msg_container = document.createElement('ul');
+            msg_container = document.createElement('ul'),
+            mouseX, mouseY,
+            mouseHeld = false,
+            drawing = false;
 
         this.container = container;
         this.canvas = canvas;
@@ -88,6 +129,63 @@ DUDL = function (outer_container, width, height, uchat, socket, debug) {
 
         $(container).append(canvas);
 
+        $(canvas).mousedown(function (e) {
+            /*        
+            fireEventAndSendMsg(
+                'punchIn',
+                {type:'drawLines', data: {lines: []}}
+            );
+            */
+
+            var pos = mousePos(e, canvas);
+            mouseX = pos[0];
+            mouseY = pos[1];
+
+            mouseHeld = true;
+            drawing = true;
+
+            $(canvas).toggleClass('hide-cursor', true);
+        });
+
+        $(canvas).mousemove(function (e) {
+
+            if (drawing) {
+                var pos = mousePos(e, canvas),
+                    coords = {
+                        x1: mouseX,
+                        y1: mouseY,
+                        x2: pos[0],
+                        y2: pos[1]
+                    };
+
+                /*
+                fireEventAndSendMsg('drawLine', coords);
+                */
+                drawLines([mouseX, mouseY, pos[0], pos[1]]);
+
+                mouseX = pos[0];
+                mouseY = pos[1];
+            }
+        });
+
+        $(canvas).mouseup(function (e) {
+            $(canvas).toggleClass('hide-cursor', false);
+            mouseHeld = false;
+            drawing = false;
+            /*fireEventAndSendMsg('punchOut', {});*/
+        });
+
+        $(canvas).mouseleave(function (e) {
+            drawing = false;
+        });
+
+        $(canvas).mouseenter(function (e) {
+            if (mouseHeld) {
+                drawing = true;
+            }
+        });
+
+
         return this;
     }());
 
@@ -102,33 +200,6 @@ DUDL = function (outer_container, width, height, uchat, socket, debug) {
     // CLIENT INPUT EVENTS
     ////////////////////////////////////////////////////////////
 
-    ////////////////////////////////////////////////////////////
-    // REMOTE-ABLE EVENT FUNCTIONS
-
-    function hideCanvas() {
-        $(ui.canvas).hide();
-    }
-    this.hideCanvas = hideCanvas;
-
-    function showCanvas() {
-        $(ui.canvas).show();
-    }
-    this.showCanvas = showCanvas;
-
-    function drawLines(coords) {
-        var ctx = ui.context,
-            i;
-        ctx.beginPath();
-        for (i = 0; i < coords.length; i += 4) {
-            ctx.moveTo(coords[i], coords[i + 1]);
-            ctx.lineTo(coords[i + 2], coords[i + 3]);
-        }
-        ctx.closePath();
-        ctx.stroke();
-    }
-
-    // REMOTE-ABLE EVENT FUNCTIONS
-    ////////////////////////////////////////////////////////////
     
     ////////////////////////////////////////////////////////////
     // MOCKET EVENT BINDINGS
@@ -136,9 +207,9 @@ DUDL = function (outer_container, width, height, uchat, socket, debug) {
     mocket = MULTIO.listen(socket);
 
     mocket.on({
-        'dudl-hideCanvas': hideCanvas,
-        'dudl-showCanvas': showCanvas,
-        'dudl-drawLines': drawLines
+        'dudl-hideCanvas': ui.hideCanvas,
+        'dudl-showCanvas': ui.showCanvas,
+        'dudl-drawLines': ui.drawLines
     });
 
     // MOCKET EVENT BINDINGS
