@@ -11,6 +11,7 @@
     indent: 4 */
 /*global
     MULTIO
+    HIST
     module
     document
     window
@@ -22,7 +23,12 @@ var DUDL = {};
 
 DUDL = function (outer_container, width, height, uchat, socket, debug) {
     var ui,
-        mocket;
+        mocket,
+        hist,
+        shiftPressed = false,
+        ctrlPressed = false;
+    
+    hist = HIST.track();
 
     ////////////////////////////////////////////////////////////
     // UTILITY FUNCTIONS
@@ -80,7 +86,7 @@ DUDL = function (outer_container, width, height, uchat, socket, debug) {
         }
         this.showCanvas = showCanvas;
 
-        function drawLines(coords) {
+        this.drawLines = hist.wrap(function drawLines(coords) {
             var ctx = ui.context,
                 i;
             ctx.beginPath();
@@ -90,8 +96,18 @@ DUDL = function (outer_container, width, height, uchat, socket, debug) {
             }
             ctx.closePath();
             ctx.stroke();
-        }
-        this.drawLines = drawLines;
+        });
+
+        this.undo = function undo() {
+            if (true || hist.canUndo()) {
+                ui.context.clearRect(0, 0, ui.canvas.width, ui.canvas.height);
+                hist.undo();
+            }
+        };
+
+        this.redo = function redo() {
+            hist.redo();
+        };
 
         // REMOTE-ABLE EVENT FUNCTIONS
         ////////////////////////////////////////////////////////////
@@ -130,16 +146,12 @@ DUDL = function (outer_container, width, height, uchat, socket, debug) {
         $(container).append(canvas);
 
         $(canvas).mousedown(function (e) {
-            /*        
-            fireEventAndSendMsg(
-                'punchIn',
-                {type:'drawLines', data: {lines: []}}
-            );
-            */
-
             var pos = mousePos(e, canvas);
             mouseX = pos[0];
             mouseY = pos[1];
+
+            mocket.fire('dudl-punchIn');
+            mocket.fire('dudl-drawLines', [mouseX, mouseY, mouseX + 0.1, mouseY]);
 
             mouseHeld = true;
             drawing = true;
@@ -158,10 +170,7 @@ DUDL = function (outer_container, width, height, uchat, socket, debug) {
                         y2: pos[1]
                     };
 
-                /*
-                fireEventAndSendMsg('drawLine', coords);
-                */
-                drawLines([mouseX, mouseY, pos[0], pos[1]]);
+                mocket.fire('dudl-drawLines', [mouseX, mouseY, pos[0], pos[1]]);
 
                 mouseX = pos[0];
                 mouseY = pos[1];
@@ -172,6 +181,7 @@ DUDL = function (outer_container, width, height, uchat, socket, debug) {
             $(canvas).toggleClass('hide-cursor', false);
             mouseHeld = false;
             drawing = false;
+            mocket.fire('dudl-punchOut');
             /*fireEventAndSendMsg('punchOut', {});*/
         });
 
@@ -197,6 +207,32 @@ DUDL = function (outer_container, width, height, uchat, socket, debug) {
         resizeCanvas(ui);
     });
 
+    $(window).keydown(function (e) {
+        if (e.keyCode === '16') { // SHIFT
+            shiftPressed = true;
+        } else if (e.keyCode == '17' ||
+                  e.keyCode == '224') { // CTRL
+            ctrlPressed = true;
+        } else if (e.keyCode == '89') { // Y
+            if (!hist.isPunchedIn() && ctrlPressed) {
+                mocket.fire('dudl-redo');
+            }
+        } else if (e.keyCode == '90') { // Z
+            if (!hist.isPunchedIn() && ctrlPressed) {
+                mocket.fire('dudl-undo');
+            }
+        }
+    });
+
+    $(window).keyup(function (e) {
+        if (e.keyCode == '16') { // SHIFT
+            shiftPressed = false;
+        } else if (e.keyCode == '17' ||
+                   e.keyCode == '224') { // CTRL
+            ctrlPressed = false;
+        }
+    });
+
     // CLIENT INPUT EVENTS
     ////////////////////////////////////////////////////////////
 
@@ -209,7 +245,15 @@ DUDL = function (outer_container, width, height, uchat, socket, debug) {
     mocket.on({
         'dudl-hideCanvas': ui.hideCanvas,
         'dudl-showCanvas': ui.showCanvas,
-        'dudl-drawLines': ui.drawLines
+        'dudl-drawLines': ui.drawLines,
+        'dudl-punchIn': function () {
+            hist.punchIn();
+        },
+        'dudl-punchOut': function () {
+            hist.punchOut();
+        },
+        'dudl-undo': ui.undo,
+        'dudl-redo': ui.redo
     });
 
     // MOCKET EVENT BINDINGS
